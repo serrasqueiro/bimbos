@@ -20,13 +20,17 @@ def main():
     """ Main (non-interactive) script """
     code = process(sys.stdout, sys.stderr, sys.argv[1:])
     if code is None:
-        print(f"""Usage:
-
-python {__file__} [--show]
-
-Copies {my_input()} into {my_output()}
-""")
+        usage()
     sys.exit(code if code else 0)
+
+def usage():
+    print(f"""Usage:
+
+python {__file__} [--show] [output.txt]
+
+Default: copies {my_input()} into {my_output()}
+""")
+    sys.exit(0)
 
 def my_input(local_name):
     if "HOME" not in environ:
@@ -44,18 +48,20 @@ def process(out, err, args):
     assert err
     param = args
     opt = ""
-    if param:
+    if param and param[0].startswith("--"):
         opt = param[0]
         del param[0]
-    if param:
+    if len(param) > 1:
         return None
     if opt == "--show":
+        if param:
+            return None
         outname = OUTPUT_NAME + ".1"
         with open(outname, "wb") as fdout:
             code = dump_encoded(fdout, my_output())
         return code
-    assert not opt
-    rewrite_bimbos(my_input(INPUT_NAME), my_output(), os.path.isfile(my_output()))
+    outname = param[0] if param else my_output()
+    rewrite_bimbos(my_input(INPUT_NAME), outname, os.path.isfile(my_output()))
     return 0
 
 def dump_encoded(out, input_path) -> int:
