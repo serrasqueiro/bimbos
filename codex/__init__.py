@@ -1,3 +1,4 @@
-# codex Wrapper
+""" codex Wrapper
+"""
 
-VERSION = "1.00 12"	# Dec-2022
+VERSION = "1.00 13"

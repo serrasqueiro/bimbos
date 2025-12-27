@@ -26,8 +26,6 @@ class Codex():
 class Textual(Codex):
     """ Textual in/ out class
     """
-    _fname = ""
-
     def __init__(self, name="", encoding=""):
         """ Initializer: name is any user name to be stored here, not a filename.
         """
@@ -49,7 +47,8 @@ class Textual(Codex):
 
     def load(self, fname:str, preserve_header="t") -> bool:
         """ Inject a specific table to this instance. """
-        txt = open(fname, "r", encoding=self._encoding).readlines()
+        with open(fname, "r", encoding=self._encoding) as fdin:
+            txt = fdin.readlines()
         self._lines = txt
         self.header = ""
         if not txt:
