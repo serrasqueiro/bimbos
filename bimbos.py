@@ -10,6 +10,7 @@ Author: Henrique Moreira, h@serrasqueiro.com
 import sys
 import os.path
 from os import environ
+import blossom.checktxu
 import codex.b64wrap as b64wrap
 
 INPUT_NAME = "bimbos.txt"
@@ -32,7 +33,7 @@ Default: copies {my_input()} into {my_output()}
 """)
     sys.exit(0)
 
-def my_input(local_name):
+def my_input(local_name=INPUT_NAME):
     if "HOME" not in environ:
         environ["HOME"] = environ["USERPROFILE"]
     fname = os.path.join(environ["HOME"], local_name)
@@ -45,7 +46,8 @@ def my_output():
     return astr[:-len(".py")] + ".txu"
 
 def process(out, err, args):
-    assert err
+    """ Main processing! """
+    debug = 1
     param = args
     opt = ""
     if param and param[0].startswith("--"):
@@ -53,15 +55,21 @@ def process(out, err, args):
         del param[0]
     if len(param) > 1:
         return None
+    in_name = my_input()
+    msgs = blossom.checktxu.do_check_text(in_name, debug=debug)
+    if msgs:
+        print('\n'.join(msgs))
+        return 3
     if opt == "--show":
         if param:
-            return None
-        outname = OUTPUT_NAME + ".1"
+            outname = param[0]
+        else:
+            outname = OUTPUT_NAME + ".1"
         with open(outname, "wb") as fdout:
             code = dump_encoded(fdout, my_output())
         return code
     outname = param[0] if param else my_output()
-    rewrite_bimbos(my_input(INPUT_NAME), outname, os.path.isfile(my_output()))
+    rewrite_bimbos(my_input(), outname, os.path.isfile(my_output()))
     return 0
 
 def dump_encoded(out, input_path) -> int:
